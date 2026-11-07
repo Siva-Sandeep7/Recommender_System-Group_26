@@ -4,8 +4,8 @@ Course project, Recommender Systems. This repository contains a fully reproducib
 
 |  |  |
 |---|---|
-| **Team** | `<team name>` |
-| **Members** | `<member names>` |
+| **Team** | `Group 26` |
+| **Members** | `SIVA SANDEEP ATMAKURU` |
 | **Status** | Part 1 (data, protocol, baselines) |
 | **Seed** | 42 |
 
