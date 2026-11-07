@@ -1,0 +1,254 @@
+{
+  "args": {
+    "data_dir": "C:\\Users\\asiva\\Downloads\\ml-1m\\ml-1m",
+    "out_dir": "outputs",
+    "seed": 42,
+    "pos_threshold": 4,
+    "train_frac": 0.8,
+    "val_frac": 0.1,
+    "split_mode": "per_user",
+    "min_user": 0,
+    "min_item": 0,
+    "n_boot": 1000,
+    "quick": false
+  },
+  "filter_info": {
+    "min_user": 0,
+    "min_item": 0,
+    "rows_before": 1000209,
+    "rows_after": 1000209,
+    "rows_removed": 0,
+    "pct_rows_removed": 0.0,
+    "users_removed": 0,
+    "items_removed": 0
+  },
+  "data_stats": {
+    "n_users": 6040,
+    "n_items_rated": 3706,
+    "n_items_in_movies_file": 3883,
+    "n_ratings": 1000209,
+    "density": 0.044683625622312845,
+    "ratings_per_user": {
+      "min": 20,
+      "median": 96.0,
+      "mean": 165.5975165562914,
+      "max": 2314
+    },
+    "ratings_per_item": {
+      "min": 1,
+      "median": 123.5,
+      "mean": 269.88909875876953,
+      "max": 3428
+    },
+    "items_with_lt10_ratings_pct": 12.034538586076632,
+    "items_with_lt5_ratings_pct": 7.825148407987048,
+    "top1pct_items_share_of_ratings": 0.08731175184386464,
+    "top10pct_items_share_of_ratings": 0.4438112434501189,
+    "top20pct_items_share_of_ratings": 0.6516408070713221,
+    "item_popularity_gini": 0.6335616301416966,
+    "user_activity_gini": 0.5286242435264805,
+    "rating_counts": {
+      "1": 56174,
+      "2": 107557,
+      "3": 261197,
+      "4": 348971,
+      "5": 226310
+    },
+    "rating_mean": 3.581564453029317,
+    "pct_ratings_ge4": 57.516079139459855,
+    "time_start": "2000-04-25 23:05:32",
+    "time_end": "2003-02-28 17:49:50",
+    "time_span_days": 1038.780763888889,
+    "ratings_per_year": {
+      "2000": 904757,
+      "2001": 68058,
+      "2002": 24046,
+      "2003": 3348
+    },
+    "busiest_day": "2000-11-20",
+    "busiest_day_share_pct": 6.364069909388938,
+    "busiest_30_days_share_pct": 39.69560361884366,
+    "users_all_ratings_within_1day_pct": 62.93046357615894,
+    "users_all_ratings_within_7days_pct": 70.24834437086092,
+    "user_rating_span_days_median": 0.04708912037037037,
+    "gender_counts": {
+      "M": 4331,
+      "F": 1709
+    },
+    "age_counts": {
+      "1": 222,
+      "18": 1103,
+      "25": 2096,
+      "35": 1193,
+      "45": 550,
+      "50": 496,
+      "56": 380
+    }
+  },
+  "split": {
+    "n_users": 6040,
+    "n_items": 3706,
+    "t_train_end": "n/a (per-user split)",
+    "t_val_end": "n/a (per-user split)",
+    "n_train": 797758,
+    "n_val": 99692,
+    "n_test": 102759,
+    "frac_train": 0.7975913034175858,
+    "frac_val": 0.09967116872573632,
+    "frac_test": 0.10273752785667796,
+    "train_start": "2000-04-25 23:05:32",
+    "test_end": "2003-02-28 17:49:50",
+    "val_eval": {
+      "n_users_with_positive_target": 5789,
+      "n_cold_users_excluded": 0,
+      "n_eval_users": 5789,
+      "n_positive_target_interactions": 53006,
+      "pct_positive_target_on_items_unseen_in_fit": 0.009432894389314416
+    },
+    "test_eval": {
+      "n_users_with_positive_target": 5821,
+      "n_cold_users_excluded": 0,
+      "n_eval_users": 5821,
+      "n_positive_target_interactions": 53025,
+      "pct_positive_target_on_items_unseen_in_fit": 0.016973125884016973
+    }
+  },
+  "best_configs": {
+    "MostPop (all-time, all ratings)": {
+      "positive_only": false,
+      "window_days": null
+    },
+    "MostPop (all-time, positive only)": {
+      "positive_only": true,
+      "window_days": null
+    },
+    "MostPop (recent window, all ratings)": {
+      "positive_only": false,
+      "window_days": 180
+    },
+    "MostPop (recent window, positive only)": {
+      "positive_only": true,
+      "window_days": 365
+    },
+    "ItemKNN": {
+      "sim": "cosine",
+      "k": 200
+    }
+  },
+  "test": {
+    "MostPop (all-time, all ratings)": {
+      "config": {
+        "positive_only": false,
+        "window_days": null
+      },
+      "Precision@10": 0.04447689400446658,
+      "Recall@10": 0.047946839495960424,
+      "NDCG@10": 0.05691514884214829,
+      "Coverage@10": 0.04020507285483001,
+      "Precision@10_ci": [
+        0.04224360075588387,
+        0.04669300807421405
+      ],
+      "Recall@10_ci": [
+        0.04522646593993682,
+        0.050712015968461026
+      ],
+      "NDCG@10_ci": [
+        0.05385588644146146,
+        0.06007597721241168
+      ]
+    },
+    "MostPop (all-time, positive only)": {
+      "config": {
+        "positive_only": true,
+        "window_days": null
+      },
+      "Precision@10": 0.045542003092252197,
+      "Recall@10": 0.04932716011983653,
+      "NDCG@10": 0.05840708252756661,
+      "Coverage@10": 0.03912574203993524,
+      "Precision@10_ci": [
+        0.04311930939701082,
+        0.04792990895035217
+      ],
+      "Recall@10_ci": [
+        0.04648013625004411,
+        0.05247000001367302
+      ],
+      "NDCG@10_ci": [
+        0.05526498032393741,
+        0.06164674285761578
+      ]
+    },
+    "MostPop (recent window, all ratings)": {
+      "config": {
+        "positive_only": false,
+        "window_days": 180
+      },
+      "Precision@10": 0.03698677203229686,
+      "Recall@10": 0.04318865463880388,
+      "NDCG@10": 0.046468689488435945,
+      "Coverage@10": 0.03049109552077712,
+      "Precision@10_ci": [
+        0.03528560384813606,
+        0.03884298230544579
+      ],
+      "Recall@10_ci": [
+        0.040720485396171534,
+        0.045840790036324235
+      ],
+      "NDCG@10_ci": [
+        0.04413009760221969,
+        0.048898572582335376
+      ]
+    },
+    "MostPop (recent window, positive only)": {
+      "config": {
+        "positive_only": true,
+        "window_days": 365
+      },
+      "Precision@10": 0.038034701941247216,
+      "Recall@10": 0.038729277080751294,
+      "NDCG@10": 0.04650563618279466,
+      "Coverage@10": 0.02914193200215866,
+      "Precision@10_ci": [
+        0.03600712935921663,
+        0.040027486686136406
+      ],
+      "Recall@10_ci": [
+        0.03635543724051179,
+        0.04110704972065024
+      ],
+      "NDCG@10_ci": [
+        0.04385692838309042,
+        0.04900415360728601
+      ]
+    },
+    "ItemKNN": {
+      "config": {
+        "sim": "cosine",
+        "k": 200
+      },
+      "Precision@10": 0.06309912386187941,
+      "Recall@10": 0.0850122518963863,
+      "NDCG@10": 0.0883030274247814,
+      "Coverage@10": 0.25930922827846736,
+      "Precision@10_ci": [
+        0.060401992784744896,
+        0.06574471740250817
+      ],
+      "Recall@10_ci": [
+        0.08054064637767278,
+        0.08921146127389569
+      ],
+      "NDCG@10_ci": [
+        0.0842012336872894,
+        0.0920866646017346
+      ]
+    }
+  },
+  "n_tuning_configs": {
+    "pop": 12,
+    "knn": 18
+  }
+}

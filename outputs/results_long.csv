@@ -1,0 +1,21 @@
+model,config,split,metric,value,ci_low,ci_high,n_eval_users,seed
+"MostPop (all-time, all ratings)","{""positive_only"": false, ""window_days"": null}",test,Precision@10,0.04447689400446658,0.04224360075588387,0.04669300807421405,5821,42
+"MostPop (all-time, all ratings)","{""positive_only"": false, ""window_days"": null}",test,Recall@10,0.047946839495960424,0.04522646593993682,0.050712015968461026,5821,42
+"MostPop (all-time, all ratings)","{""positive_only"": false, ""window_days"": null}",test,NDCG@10,0.05691514884214829,0.05385588644146146,0.06007597721241168,5821,42
+"MostPop (all-time, all ratings)","{""positive_only"": false, ""window_days"": null}",test,Coverage@10,0.04020507285483001,,,5821,42
+"MostPop (all-time, positive only)","{""positive_only"": true, ""window_days"": null}",test,Precision@10,0.045542003092252197,0.04311930939701082,0.04792990895035217,5821,42
+"MostPop (all-time, positive only)","{""positive_only"": true, ""window_days"": null}",test,Recall@10,0.04932716011983653,0.04648013625004411,0.05247000001367302,5821,42
+"MostPop (all-time, positive only)","{""positive_only"": true, ""window_days"": null}",test,NDCG@10,0.05840708252756661,0.05526498032393741,0.06164674285761578,5821,42
+"MostPop (all-time, positive only)","{""positive_only"": true, ""window_days"": null}",test,Coverage@10,0.03912574203993524,,,5821,42
+"MostPop (recent window, all ratings)","{""positive_only"": false, ""window_days"": 180}",test,Precision@10,0.03698677203229686,0.03528560384813606,0.03884298230544579,5821,42
+"MostPop (recent window, all ratings)","{""positive_only"": false, ""window_days"": 180}",test,Recall@10,0.04318865463880388,0.040720485396171534,0.045840790036324235,5821,42
+"MostPop (recent window, all ratings)","{""positive_only"": false, ""window_days"": 180}",test,NDCG@10,0.046468689488435945,0.04413009760221969,0.048898572582335376,5821,42
+"MostPop (recent window, all ratings)","{""positive_only"": false, ""window_days"": 180}",test,Coverage@10,0.03049109552077712,,,5821,42
+"MostPop (recent window, positive only)","{""positive_only"": true, ""window_days"": 365}",test,Precision@10,0.038034701941247216,0.03600712935921663,0.040027486686136406,5821,42
+"MostPop (recent window, positive only)","{""positive_only"": true, ""window_days"": 365}",test,Recall@10,0.038729277080751294,0.03635543724051179,0.04110704972065024,5821,42
+"MostPop (recent window, positive only)","{""positive_only"": true, ""window_days"": 365}",test,NDCG@10,0.04650563618279466,0.04385692838309042,0.04900415360728601,5821,42
+"MostPop (recent window, positive only)","{""positive_only"": true, ""window_days"": 365}",test,Coverage@10,0.02914193200215866,,,5821,42
+ItemKNN,"{""sim"": ""cosine"", ""k"": 200}",test,Precision@10,0.06309912386187941,0.060401992784744896,0.06574471740250817,5821,42
+ItemKNN,"{""sim"": ""cosine"", ""k"": 200}",test,Recall@10,0.0850122518963863,0.08054064637767278,0.08921146127389569,5821,42
+ItemKNN,"{""sim"": ""cosine"", ""k"": 200}",test,NDCG@10,0.0883030274247814,0.0842012336872894,0.0920866646017346,5821,42
+ItemKNN,"{""sim"": ""cosine"", ""k"": 200}",test,Coverage@10,0.25930922827846736,,,5821,42

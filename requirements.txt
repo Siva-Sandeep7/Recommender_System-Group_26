@@ -1,0 +1,8 @@
+# Tested with Python 3.13 (see README). After your own successful run, regenerate with
+#   pip freeze | grep -iE "^(numpy|scipy|pandas|matplotlib|scikit-learn)=="
+# and paste the result here so the pins match the environment behind your reported numbers.
+numpy==2.5.3
+scipy==1.18.1
+pandas==3.0.5
+matplotlib==3.11.2
+scikit-learn==1.9.1   # only used by tests/check_metrics.py
