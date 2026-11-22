@@ -1,0 +1,28 @@
+{
+  "pop": {
+    "positive_only": true,
+    "window_days": null
+  },
+  "iknn": {
+    "sim": "cosine",
+    "k": 200
+  },
+  "uknn": {
+    "sim": "jaccard",
+    "idf": false,
+    "k": 50,
+    "shrink": 30
+  },
+  "als": {
+    "factors": 64,
+    "reg": 1.0,
+    "alpha": 5,
+    "iterations": 15
+  },
+  "bpr": {
+    "k": 64,
+    "lr": 0.1,
+    "reg": 0.01,
+    "epochs": 30
+  }
+}

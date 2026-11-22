@@ -1,0 +1,60 @@
+{
+  "args": {
+    "data_dir": "C:\\Users\\asiva\\Downloads\\ml-1m\\ml-1m",
+    "out_dir": "outputs_part2_v2",
+    "split_mode": "per_user",
+    "pos_threshold": 4,
+    "train_frac": 0.8,
+    "val_frac": 0.1,
+    "budget": 18,
+    "n_seeds": 5,
+    "n_boot": 1000,
+    "skip_als": false,
+    "reuse_tuning": true,
+    "quick": false
+  },
+  "seeds": [
+    42,
+    43,
+    44,
+    45,
+    46
+  ],
+  "split_mode": "per_user",
+  "n_test_users": 5821,
+  "activity_median_ratings": 89.0,
+  "head_items": 741,
+  "head_min_ratings": 380,
+  "budget": 18,
+  "best_configs": {
+    "pop": {
+      "positive_only": true,
+      "window_days": null
+    },
+    "iknn": {
+      "sim": "cosine",
+      "k": 200
+    },
+    "uknn": {
+      "sim": "jaccard",
+      "idf": false,
+      "k": 50,
+      "shrink": 30
+    },
+    "als": {
+      "factors": 64,
+      "reg": 1.0,
+      "alpha": 5,
+      "iterations": 15
+    },
+    "bpr": {
+      "k": 64,
+      "lr": 0.1,
+      "reg": 0.01,
+      "epochs": 30
+    },
+    "ease": {
+      "lam": 750
+    }
+  }
+}

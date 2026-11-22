@@ -1,8 +1,21 @@
-# Tested with Python 3.13 (see README). After your own successful run, regenerate with
-#   pip freeze | grep -iE "^(numpy|scipy|pandas|matplotlib|scikit-learn)=="
-# and paste the result here so the pins match the environment behind your reported numbers.
-numpy==2.5.3
-scipy==1.18.1
-pandas==3.0.5
+﻿cloudpickle==3.1.2
+colorama==0.4.6
+contourpy==1.4.0
+cycler==0.12.1
+fonttools==4.68.0
+implicit==0.7.3
+joblib==1.6.0
+kiwisolver==1.5.1
 matplotlib==3.11.2
-scikit-learn==1.9.1   # only used by tests/check_metrics.py
+narwhals==2.28.0
+numpy==2.5.3
+packaging==26.3
+pandas==3.0.5
+pillow==13.0.0
+pyparsing==3.3.3
+python-dateutil==4.0.0
+scikit-learn==1.9.1
+scipy==1.18.1
+threadpoolctl==3.8.0
+tqdm==4.70.1
+tzdata==2026.6

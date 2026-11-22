@@ -1,0 +1,31 @@
+model,dimension,group,metric,value,ci_low,ci_high,n,slot_share
+Most Popular,user activity,low activity (<= median),NDCG@10,0.03888892554669427,0.03467852942968103,0.042802677730155544,2916,
+Most Popular,user activity,low activity (<= median),Recall@10,0.05211490517560476,0.046970630701983575,0.05754885470420449,2916,
+Most Popular,user activity,high activity (> median),NDCG@10,0.07799914647118923,0.07330268661592428,0.08306080994106962,2905,
+Most Popular,user activity,high activity (> median),Recall@10,0.04652885905869361,0.043429626585885055,0.04975878107080356,2905,
+Most Popular,item popularity,popular items (head),Recall@10 (relevant items of the group),0.06669976279010363,0.06293257308766693,0.0704745142215325,5480,1.0
+Most Popular,item popularity,long-tail items,Recall@10 (relevant items of the group),0.0,0.0,0.0,4251,0.0
+Item-based kNN,user activity,low activity (<= median),NDCG@10,0.07802795610972572,0.07230501072511789,0.08342893207841276,2916,
+Item-based kNN,user activity,low activity (<= median),Recall@10,0.11082655627408712,0.10309751752781589,0.11807412102358089,2916,
+Item-based kNN,user activity,high activity (> median),NDCG@10,0.09605200603401287,0.09105289434518223,0.10104484085639902,2905,
+Item-based kNN,user activity,high activity (> median),Recall@10,0.061372328879953864,0.05745627810375542,0.06480804457785726,2905,
+Item-based kNN,item popularity,popular items (head),Recall@10 (relevant items of the group),0.11647814636854575,0.11062082336761211,0.12218708081476187,5480,0.9637003951211132
+Item-based kNN,item popularity,long-tail items,Recall@10 (relevant items of the group),0.008681606378281932,0.006372788505572367,0.010855335410733013,4251,0.03629960487888679
+User-based kNN,user activity,low activity (<= median),NDCG@10,0.08179218476983632,0.07575983106646621,0.08755468132779634,2916,
+User-based kNN,user activity,low activity (<= median),Recall@10,0.11452182267511485,0.10651430531060163,0.1221467696017593,2916,
+User-based kNN,user activity,high activity (> median),NDCG@10,0.1003098438230922,0.09479415232560158,0.10577226420225695,2905,
+User-based kNN,user activity,high activity (> median),Recall@10,0.06278310039002008,0.05903088591161954,0.06637043194187535,2905,
+User-based kNN,item popularity,popular items (head),Recall@10 (relevant items of the group),0.12291143311595672,0.1170974153817123,0.12840566759640953,5480,0.9939357498711562
+User-based kNN,item popularity,long-tail items,Recall@10 (relevant items of the group),0.002494843340386512,0.0012505181231734737,0.003939928682242547,4251,0.006064250128843841
+"ALS (implicit, library)",user activity,low activity (<= median),NDCG@10,0.07622944067239601,0.0712455941345288,0.08160819801611859,2916,
+"ALS (implicit, library)",user activity,low activity (<= median),Recall@10,0.10985830774925426,0.1026121872074161,0.11676061501132232,2916,
+"ALS (implicit, library)",user activity,high activity (> median),NDCG@10,0.09758919739408775,0.09266965996775335,0.10242320728750667,2905,
+"ALS (implicit, library)",user activity,high activity (> median),Recall@10,0.06203934280897572,0.05830215640516051,0.06544618228841231,2905,
+"ALS (implicit, library)",item popularity,popular items (head),Recall@10 (relevant items of the group),0.12015911982379222,0.11476952369014956,0.12538880133275718,5480,0.9878285517952241
+"ALS (implicit, library)",item popularity,long-tail items,Recall@10 (relevant items of the group),0.0018733443402612752,0.0011244574160119447,0.002757320865366855,4251,0.012171448204775812
+BPR (self-implemented),user activity,low activity (<= median),NDCG@10,0.03737819498396977,0.03357595343778215,0.04077890149155756,2916,
+BPR (self-implemented),user activity,low activity (<= median),Recall@10,0.04981716909443247,0.045121687678272036,0.05413870789513794,2916,
+BPR (self-implemented),user activity,high activity (> median),NDCG@10,0.08362660899084103,0.07915673730726304,0.08872757624158217,2905,
+BPR (self-implemented),user activity,high activity (> median),Recall@10,0.048788273220023326,0.04596685802706159,0.05189187712569809,2905,
+BPR (self-implemented),item popularity,popular items (head),Recall@10 (relevant items of the group),0.06828070705284515,0.06479492100801269,0.07168265763498154,5480,0.9999141041058237
+BPR (self-implemented),item popularity,long-tail items,Recall@10 (relevant items of the group),1.1536829499166535e-05,0.0,2.9264152875934625e-05,4251,8.589589417625838e-05

@@ -1,13 +1,13 @@
-# Recommender Systems on MovieLens 1M - Part 1: Data, Protocol and Baselines
+# Recommender Systems on MovieLens 1M - Parts 1-2: Protocol, Baselines and Model Comparison
 
-Course project, Recommender Systems. This repository contains a fully reproducible evaluation pipeline for MovieLens 1M: data characterization, a leakage-aware temporal split, a full-catalogue ranking evaluation, and two tuned baselines (item-based kNN and Most Popular).
+Course project, Recommender Systems. This repository contains a fully reproducible evaluation pipeline for MovieLens 1M: data characterization, a chronological split, a full-catalogue ranking evaluation, two tuned baselines (item-based kNN and Most Popular) and, in Part 2, three further models (user-based kNN, ALS, and a self-implemented BPR) compared under an equal tuning budget with multiple seeds, disaggregated results and a sparsity ablation.
 
 |  |  |
 |---|---|
-| **Team** | `Group 26` |
-| **Members** | `SIVA SANDEEP ATMAKURU` |
-| **Status** | Part 1 (data, protocol, baselines) |
-| **Seed** | 42 |
+| **Team** | `<team name>` |
+| **Members** | `<member names>` |
+| **Status** | Part 1 (data, protocol, baselines) and Part 2 (models, honest comparison) |
+| **Seeds** | 42 (Part 1); 42-46 for the stochastic Part 2 models and subsampling |
 
 ## Headline result
 
@@ -35,9 +35,9 @@ pip install -r requirements.txt
 python run_all.py --data-dir /path/to/ml-1m
 ```
 
-A full run takes about a minute on a laptop (about 70 s measured) and needs well under 2 GB of RAM. The data path is the only required argument; nothing depends on absolute paths or on files outside this repository.
+A full Part 1 run takes about one to two minutes on a laptop (67-90 s measured) and needs well under 2 GB of RAM. The data path is the only required argument; nothing depends on absolute paths or on files outside this repository.
 
-**Environment.** Developed and tested with Python 3.14 on Windows and Python 3.13 on Linux. Exact package versions are pinned in `requirements.txt`.
+**Environment.** Python 3.14 (Windows). `requirements.txt` is a full `pip freeze` of the environment that produced the reported numbers, including `implicit` for the Part 2 ALS model.
 
 ## What the pipeline does
 
@@ -67,10 +67,57 @@ A full run takes about a minute on a laptop (about 70 s measured) and needs well
 - **Item-based kNN.** Binary positive user-item matrix. The score of item *j* for user *u* is the sum of the similarities between *j* and the items in *u*'s positive history, keeping only each target item's *k* most similar items (negative similarities clipped to 0). Similarities: cosine, Jaccard, adjusted cosine; k in {10, 20, 50, 100, 200, 500}.
 - **Most Popular.** Four variants: all-time or recent window (7, 30, 90, 180, 365 days before the end of the fitted data) crossed with counting all ratings or only positive ones.
 
+## Part 2 - Models and honest comparison
+
+Adds three models to the Part 1 protocol (same data, same per-user chronological split, same metrics, same full-catalogue ranking) and compares them with the Part 1 baselines.
+
+| Model | Paradigm | Source |
+|---|---|---|
+| Most Popular, Item-based kNN | baselines from Part 1, re-tuned here with the same budget | `models.py` |
+| User-based kNN | neighbourhood CF | `models_p2.py` (NumPy/SciPy, no recommender library) |
+| ALS | latent-factor CF (weighted implicit-feedback MF) | library `implicit` (wrapper in `models_p2.py`) |
+| **BPR** | ranking-loss CF | **self-implemented** in `bpr.py` (NumPy only) |
+
+### Run
+```
+pip install -r requirements.txt          # includes implicit
+python run_part2.py --data-dir /path/to/ml-1m
+```
+Writes to `outputs_part2/` (`--out-dir`). Expect about half an hour on a laptop (rough estimate; replace with your measured time). Useful options: `--quick` (tiny smoke test), `--reuse-tuning` (skip tuning, reuse `best_configs.json`), `--skip-als`, `--n-seeds`, `--budget`.
+
+| File | Content |
+|---|---|
+| `results_part2_models.csv` | overall test results, mean over seeds, bootstrap CIs, std over seeds |
+| `pairwise_ndcg.csv` | paired per-user NDCG@10 differences with 95% CIs |
+| `results_part2_disaggregated.csv` | results by user activity (low/high) and item popularity (head/long tail) |
+| `results_part2_sparsity.csv` | 100% / 50% / 20% training interactions, with rank per fraction |
+| `tuning_log_part2.csv`, `best_configs.json` | every validation run and the selected configurations |
+| `report_numbers_part2.md` | all numbers used in the report |
+
+### Protocol additions
+- **Tuning:** validation only, the same budget (18 configurations) for every model family; a family with a smaller search space is searched exhaustively. Stochastic models are tuned with seed 42.
+- **Variability:** stochastic models (ALS, BPR) are run with 5 seeds (42-46); intervals are 95% bootstrap CIs over users on the seed-averaged per-user metric, plus the standard deviation across seeds. Comparisons between models are paired (per-user differences).
+- **Disaggregation:** low/high activity users split at the median number of ratings; popular items are the 20% most-rated items.
+- **Sparsity:** a random fraction of the training interactions is kept (different subsample per seed). Hyperparameters chosen at 100% are held fixed. The candidate set stays the same: every interaction in the full history is still excluded from the ranking.
+
+### Checks
+```
+python tests/check_bpr.py          # gradient check, hand-computed update, negative sampling, learning
+python tests/check_models_p2.py    # user-kNN vs a loop implementation; ALS wrapper (if implicit is installed)
+python tests/check_analysis.py     # disaggregation / paired-CI helpers vs brute force
+```
+
+### Self-implemented algorithm
+BPR-MF (`bpr.py`, Lecture 2.1 slide 12): matrix factorisation with an item bias, trained with mini-batch stochastic gradient ascent on `ln sigma(x_uij) - reg/2 |params|^2`, with one uniformly sampled untouched item as negative per positive. The loss, gradients and update rule are documented at the top of the file.
+
 ## Repository layout
 
 ```
-run_all.py          single entry point; runs everything
+run_all.py          Part 1 entry point
+run_part2.py        Part 2 entry point (models, tuning, seeds, disaggregation, sparsity)
+bpr.py              SELF-IMPLEMENTED BPR (Part 2)
+models_p2.py        user-based kNN, ALS wrapper (Part 2)
+analysis.py         paired CIs, disaggregation groups, subsampling (Part 2)
 data.py             loading, filtering, temporal splits, interaction matrices
 eda.py              data statistics and figures
 models.py           MostPopular and ItemKNN
@@ -80,6 +127,7 @@ report.py           generates outputs/report_numbers.md
 requirements.txt    pinned dependencies
 tests/
   check_metrics.py  verifies metrics against scikit-learn and direct definitions
+  check_bpr.py, check_models_p2.py, check_analysis.py   Part 2 checks
   make_fake_ml1m.py synthetic data in ML-1M format, for smoke tests
 ```
 
