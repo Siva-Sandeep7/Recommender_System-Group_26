@@ -1,181 +1,207 @@
-# Recommender Systems on MovieLens 1M - Parts 1-2: Protocol, Baselines and Model Comparison
+# Recommender Systems: Models and Honest Comparison on MovieLens 1M
 
-Course project, Recommender Systems. This repository contains a fully reproducible evaluation pipeline for MovieLens 1M: data characterization, a chronological split, a full-catalogue ranking evaluation, two tuned baselines (item-based kNN and Most Popular) and, in Part 2, three further models (user-based kNN, ALS, and a self-implemented BPR) compared under an equal tuning budget with multiple seeds, disaggregated results and a sparsity ablation.
+> Course project, Group 26 · Part 2 (Models and Honest Comparison) with Part 1 retained · Part 3 track: **A – Diversity and Popularity Bias**
 
-|  |  |
-|---|---|
-| **Team** | `<team name>` |
-| **Members** | `<member names>` |
-| **Status** | Part 1 (data, protocol, baselines) and Part 2 (models, honest comparison) |
-| **Seeds** | 42 (Part 1); 42-46 for the stochastic Part 2 models and subsampling |
+A controlled comparison of six recommenders on MovieLens 1M under a single evaluation protocol, with equal tuning effort, multiple seeds, paired confidence intervals, group-level breakdowns and a data-sparsity test. Two of the models, **BPR-MF** and **EASE**, are implemented from scratch in NumPy.
 
-## Headline result
+---
 
-Test set, 5,821 evaluated users, ranked against the full 3,706-item catalogue. Brackets are 95% bootstrap intervals over users.
+## Table of Contents
 
-| Model | Precision@10 | Recall@10 | NDCG@10 | Coverage@10 |
+1. [Headline Results](#headline-results)
+2. [Models](#models)
+3. [Experimental Protocol](#experimental-protocol)
+4. [Key Findings](#key-findings)
+5. [Repository Structure](#repository-structure)
+6. [Getting Started](#getting-started)
+7. [Reproducing the Results](#reproducing-the-results)
+8. [Limitations](#limitations)
+9. [Roadmap: Part 3](#roadmap-part-3)
+10. [Use of AI Assistants](#use-of-ai-assistants)
+11. [References](#references)
+12. [Author](#author)
+
+---
+
+## Headline Results
+
+Test results on 5,821 users, full-catalogue ranking (3,706 items), cutoff 10. NDCG@10 shown with 95% bootstrap interval over users.
+
+| Model | P@10 | R@10 | NDCG@10 [95% CI] | Coverage@10 |
 |---|---|---|---|---|
 | Most Popular (all-time, positive only) | 0.0455 | 0.0493 | 0.0584 [0.0553, 0.0616] | 0.039 |
-| **Item-kNN (cosine, k = 200)** | **0.0631** | **0.0850** | **0.0883 [0.0842, 0.0921]** | **0.259** |
+| Item-kNN (cosine, k = 200) | 0.0631 | 0.0850 | 0.0883 [0.0842, 0.0921] | 0.259 |
+| User-kNN (Jaccard, k = 50, shrink 30) | 0.0642 | 0.0887 | 0.0910 [0.0867, 0.0948] | 0.187 |
+| ALS (64 factors, reg 1, alpha 5) | 0.0594 | 0.0922 | 0.0882 [0.0845, 0.0919] | 0.316 |
+| BPR-MF (own) | 0.0585 | 0.0817 | 0.0822 [0.0790, 0.0852] | 0.353 |
+| **EASE (own, λ = 750)** | **0.0709** | **0.1032** | **0.1014 [0.0971, 0.1054]** | 0.226 |
 
-Item-kNN beats the best popularity variant on every accuracy metric with non-overlapping NDCG intervals, and recommends about seven times as much of the catalogue. All four Most Popular variants and the full tuning grid are in the generated outputs (see below).
+**EASE is the most accurate model.** Its paired NDCG@10 advantage over the runner-up (user-kNN) is **+0.0104 [+0.0079, +0.0130]**, and the interval excludes zero.
 
-## Quick start
+---
+
+## Models
+
+| Model | Paradigm | Implementation | Own code |
+|---|---|---|---|
+| Most Popular | Non-personalised | Part 1 (12 configurations: window × feedback type) | – |
+| Item-kNN | Neighbourhood CF | Part 1 (cosine / Jaccard / adjusted cosine, k ∈ {10 … 500}) | – |
+| User-kNN | Neighbourhood CF | NumPy/SciPy, no library | – |
+| ALS | Latent-factor CF | [`implicit`](https://github.com/benfred/implicit) library | – |
+| **BPR-MF** | Latent-factor, ranking loss | `bpr.py`, NumPy only | ✅ |
+| **EASE** | Linear item-item autoencoder | `ease.py`, NumPy only | ✅ |
+
+**BPR-MF.** Score `x_ui = p_u · q_i + b_i`, trained by mini-batch SGD on sampled triples (u, i, j) with hand-derived gradients. Verified against finite differences (max error 3e-10).
+
+**EASE.** Closed-form ridge regression with a zero-diagonal constraint: `B[i,j] = -P[i,j] / P[j,j]` where `P = (XᵀX + λI)⁻¹`. Deterministic, one hyperparameter. Verified against explicit per-item constrained regressions (agreement to 1e-8).
+
+---
+
+## Experimental Protocol
+
+- **Data:** MovieLens 1M, 1,000,209 ratings, 6,040 users, 3,706 items. Ratings ≥ 4 are positive feedback.
+- **Split:** per-user chronological 80 / 10 / 10 (train / validation / test). Models are tuned on validation, refit on train + validation, and evaluated **once** on test.
+- **Ranking:** full catalogue, user history excluded, **no sampled negatives**.
+- **Metrics:** Precision@10, Recall@10, NDCG@10, Coverage@10. Implemented in-house and verified against `scikit-learn`'s `ndcg_score`.
+- **Uncertainty:** 95% percentile bootstrap over users (1,000 resamples). Model differences use **paired** bootstraps on the same users. Seeds 42–46 for stochastic models.
+- **Tuning budget:** 18 configurations per family (or the full grid if smaller), validation only.
+
+> A global temporal split was tried first and rejected: 90.5% of ratings were entered in 2000 and most users rated in a single sitting, leaving only 492 evaluable validation users.
+
+---
+
+## Key Findings
+
+1. **EASE leads on accuracy**, and keeps its lead at every training fraction (100%, 50%, 20%).
+2. **User-kNN, item-kNN and ALS are statistically tied.** All paired intervals include zero.
+3. **Our BPR trails the kNN models and ALS.** The best setting sits at the edge of the grid, so it is likely under-tuned.
+4. **The accuracy winner is not the long-tail winner.** EASE spends 98.7% of its top-10 slots on head items; BPR (tail R@10 = 0.0100) and ALS (0.0093) find more of the tail than EASE (0.0056).
+5. **Method rankings depend on user activity.** ALS is second-best for low-activity users but fifth for high-activity users.
+6. **Sparsity breaks most models.** With 20% of the training data, item-kNN, user-kNN, ALS and BPR all fall below plain popularity. Only EASE stays ahead.
+
+| NDCG@10 (rank of 6) | 100% | 50% | 20% |
+|---|---|---|---|
+| Most Popular | 0.0584 (6) | 0.0589 (6) | 0.0582 (2) |
+| Item-kNN | 0.0883 (3) | 0.0803 (2) | 0.0453 (6) |
+| User-kNN | 0.0910 (2) | 0.0754 (3) | 0.0517 (4) |
+| ALS | 0.0882 (4) | 0.0695 (5) | 0.0472 (5) |
+| BPR (own) | 0.0822 (5) | 0.0698 (4) | 0.0535 (3) |
+| EASE (own) | **0.1014 (1)** | **0.0857 (1)** | **0.0642 (1)** |
+
+---
+
+## Repository Structure
+
+> Adjust folder and file names to match your repository.
+
+```text
+Recommender_System-Group_26/
+├── README.md
+├── requirements.txt
+├── data/                  # MovieLens 1M (not committed, see Getting Started)
+├── src/
+│   ├── data.py            # loading, preprocessing, per-user chronological split
+│   ├── metrics.py         # P@10, R@10, NDCG@10, coverage, bootstrap
+│   ├── baselines.py       # Most Popular, item-kNN
+│   ├── userknn.py         # user-based kNN
+│   ├── als_model.py       # wrapper around implicit ALS
+│   ├── bpr.py             # BPR-MF (own implementation)
+│   └── ease.py            # EASE (own implementation)
+├── tests/                 # gradient checks, metric checks, EASE closed-form check
+├── results/
+│   └── tuning_log.csv     # full tuning grid for every model
+├── figures/
+└── report/
+    └── Report_Part2.pdf
+```
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.9+
+- Packages: `numpy`, `scipy`, `pandas`, `scikit-learn`, `matplotlib`, `implicit`
+
+### Installation
 
 ```bash
-# 1. Get the data (GroupLens terms apply): https://grouplens.org/datasets/movielens/1m/
-#    Unzip it. You need the folder that directly contains ratings.dat, movies.dat, users.dat.
+git clone https://github.com/Siva-Sandeep7/Recommender_System-Group_26.git
+cd Recommender_System-Group_26
 
-# 2. Create an environment and install the pinned dependencies
 python -m venv .venv
-source .venv/bin/activate            # Windows PowerShell: .venv\Scripts\activate
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-
-# 3. Reproduce every number and figure
-python run_all.py --data-dir /path/to/ml-1m
 ```
 
-A full Part 1 run takes about one to two minutes on a laptop (67-90 s measured) and needs well under 2 GB of RAM. The data path is the only required argument; nothing depends on absolute paths or on files outside this repository.
+### Data
 
-**Environment.** Python 3.14 (Windows). `requirements.txt` is a full `pip freeze` of the environment that produced the reported numbers, including `implicit` for the Part 2 ALS model.
+Download **MovieLens 1M** from [GroupLens](https://grouplens.org/datasets/movielens/1m/) and extract `ratings.dat` into `data/`.
 
-## What the pipeline does
+---
 
-1. **Loads and characterizes the data**: users, items, density, long-tail statistics, rating distribution, time span and burstiness (figures and statistics).
-2. **Splits chronologically** (80% train / 10% validation / 10% test).
-3. **Tunes on validation only**: 18 item-kNN configurations (3 similarities x 6 neighbourhood sizes) and 12 Most Popular configurations (window length x feedback treatment).
-4. **Evaluates once on test** after refitting the selected configurations on train + validation, with bootstrap confidence intervals.
-5. **Checks sensitivity to filtering**: re-runs the selected models with minimum item-rating thresholds of 5, 10 and 20.
-6. **Writes all results** and a file of report-ready numbers.
+## Reproducing the Results
 
-## Evaluation protocol
+> Replace the commands below with your actual entry points.
 
-| Decision | Choice |
-|---|---|
-| Split | Per-user chronological: each user's earliest 80% of ratings train, next 10% validation, last 10% test. `--split-mode global` uses a single cut date instead. |
-| Why per-user | Most users enter all their ratings in one short session (62.9% within 24 h). A global cut date left only 492 of 6,040 users evaluable on validation because the rest have no earlier history. The per-user split evaluates 5,789 validation and 5,821 test users. Trade-off: no global cut date, so one user's test interaction can precede another user's training interaction. |
-| Feedback | Rating >= 4 is positive. Positives define relevant items and the training signal for kNN and positive-only popularity. Every rated item is excluded from that user's ranking. |
-| Candidate set | All 3,706 items minus the user's history. No sampled negatives. |
-| Metrics | Precision@10, Recall@10, NDCG@10 (binary gains, ideal DCG over min(#relevant, 10)), catalogue coverage@10. Implemented in `metrics.py` and verified against scikit-learn (`tests/check_metrics.py`). |
-| Evaluated users | Users with at least one positive item in the target period. Users with no earlier history would be counted and excluded (none occur with the per-user split). |
-| Tie-breaking | Deterministic, by training popularity. |
-| Intervals | 95% percentile bootstrap over users, 1,000 resamples, seed 42. |
-| Tuning | Validation only (NDCG@10). Final models are refit on train + validation and scored once on test. |
+```bash
+# 1. Run unit tests (gradient checks, metric checks, EASE closed form)
+pytest tests/
 
-## Baselines
+# 2. Tune all models on validation
+python src/run_tuning.py --seed 42
 
-- **Item-based kNN.** Binary positive user-item matrix. The score of item *j* for user *u* is the sum of the similarities between *j* and the items in *u*'s positive history, keeping only each target item's *k* most similar items (negative similarities clipped to 0). Similarities: cosine, Jaccard, adjusted cosine; k in {10, 20, 50, 100, 200, 500}.
-- **Most Popular.** Four variants: all-time or recent window (7, 30, 90, 180, 365 days before the end of the fitted data) crossed with counting all ratings or only positive ones.
+# 3. Refit on train + validation and evaluate on test (seeds 42-46)
+python src/run_final.py
 
-## Part 2 - Models and honest comparison
-
-Adds three models to the Part 1 protocol (same data, same per-user chronological split, same metrics, same full-catalogue ranking) and compares them with the Part 1 baselines.
-
-| Model | Paradigm | Source |
-|---|---|---|
-| Most Popular, Item-based kNN | baselines from Part 1, re-tuned here with the same budget | `models.py` |
-| User-based kNN | neighbourhood CF | `models_p2.py` (NumPy/SciPy, no recommender library) |
-| ALS | latent-factor CF (weighted implicit-feedback MF) | library `implicit` (wrapper in `models_p2.py`) |
-| **BPR** | ranking-loss CF | **self-implemented** in `bpr.py` (NumPy only) |
-
-### Run
-```
-pip install -r requirements.txt          # includes implicit
-python run_part2.py --data-dir /path/to/ml-1m
-```
-Writes to `outputs_part2/` (`--out-dir`). Expect about half an hour on a laptop (rough estimate; replace with your measured time). Useful options: `--quick` (tiny smoke test), `--reuse-tuning` (skip tuning, reuse `best_configs.json`), `--skip-als`, `--n-seeds`, `--budget`.
-
-| File | Content |
-|---|---|
-| `results_part2_models.csv` | overall test results, mean over seeds, bootstrap CIs, std over seeds |
-| `pairwise_ndcg.csv` | paired per-user NDCG@10 differences with 95% CIs |
-| `results_part2_disaggregated.csv` | results by user activity (low/high) and item popularity (head/long tail) |
-| `results_part2_sparsity.csv` | 100% / 50% / 20% training interactions, with rank per fraction |
-| `tuning_log_part2.csv`, `best_configs.json` | every validation run and the selected configurations |
-| `report_numbers_part2.md` | all numbers used in the report |
-
-### Protocol additions
-- **Tuning:** validation only, the same budget (18 configurations) for every model family; a family with a smaller search space is searched exhaustively. Stochastic models are tuned with seed 42.
-- **Variability:** stochastic models (ALS, BPR) are run with 5 seeds (42-46); intervals are 95% bootstrap CIs over users on the seed-averaged per-user metric, plus the standard deviation across seeds. Comparisons between models are paired (per-user differences).
-- **Disaggregation:** low/high activity users split at the median number of ratings; popular items are the 20% most-rated items.
-- **Sparsity:** a random fraction of the training interactions is kept (different subsample per seed). Hyperparameters chosen at 100% are held fixed. The candidate set stays the same: every interaction in the full history is still excluded from the ranking.
-
-### Checks
-```
-python tests/check_bpr.py          # gradient check, hand-computed update, negative sampling, learning
-python tests/check_models_p2.py    # user-kNN vs a loop implementation; ALS wrapper (if implicit is installed)
-python tests/check_analysis.py     # disaggregation / paired-CI helpers vs brute force
+# 4. Disaggregated analysis and sparsity ablation
+python src/run_analysis.py
+python src/run_sparsity.py
 ```
 
-### Self-implemented algorithm
-BPR-MF (`bpr.py`, Lecture 2.1 slide 12): matrix factorisation with an item bias, trained with mini-batch stochastic gradient ascent on `ln sigma(x_uij) - reg/2 |params|^2`, with one uniformly sampled untouched item as negative per positive. The loss, gradients and update rule are documented at the top of the file.
+The full tuning grid is recorded in `results/tuning_log.csv`.
 
-## Repository layout
+---
 
-```
-run_all.py          Part 1 entry point
-run_part2.py        Part 2 entry point (models, tuning, seeds, disaggregation, sparsity)
-bpr.py              SELF-IMPLEMENTED BPR (Part 2)
-models_p2.py        user-based kNN, ALS wrapper (Part 2)
-analysis.py         paired CIs, disaggregation groups, subsampling (Part 2)
-data.py             loading, filtering, temporal splits, interaction matrices
-eda.py              data statistics and figures
-models.py           MostPopular and ItemKNN
-metrics.py          ranking metrics, full-catalogue evaluation, bootstrap CIs
-results.py          results writers (course workbook layout)
-report.py           generates outputs/report_numbers.md
-requirements.txt    pinned dependencies
-tests/
-  check_metrics.py  verifies metrics against scikit-learn and direct definitions
-  check_bpr.py, check_models_p2.py, check_analysis.py   Part 2 checks
-  make_fake_ml1m.py synthetic data in ML-1M format, for smoke tests
-```
+## Limitations
 
-## Outputs (written to `outputs/`)
+- **Single split.** Intervals cover user sampling and seed variation, not split or tuning variation.
+- **Per-user split can be optimistic**, and because most users rate in one session, test performance mainly measures within-session prediction.
+- **ALS and BPR** were searched over random subsets of their grids; BPR is probably under-tuned.
+- **EASE was added after** the first full run showed BPR trailing; its λ was chosen on validation only.
+- **Hyperparameters were not retuned** for the sparsity runs, which may understate every model.
+- **No metadata** (genres, user attributes) is used by any model.
 
-| File | Content |
-|---|---|
-| `results.csv` | Final test results in the layout of the course workbook tab *Part 1 - Baselines*; confidence intervals are in the Notes column |
-| `results_long.csv` | The same results in long format with explicit CI columns |
-| `tuning_log.csv` | Every validation run of the full tuning grid |
-| `filter_sensitivity.csv` | Effect of item-count filtering on the selected models |
-| `summary.json` | All statistics, split details, selected configurations |
-| `report_numbers.md` | Every number used in the report |
-| `figures/` | `fig_long_tail.png`, `fig_rating_dist.png`, `fig_activity_time.png` |
+---
 
-## Command-line options
+## Roadmap: Part 3
 
-| Option | Default | Meaning |
-|---|---|---|
-| `--data-dir` | required | Folder with `ratings.dat`, `movies.dat`, `users.dat` |
-| `--out-dir` | `outputs` | Where results are written |
-| `--split-mode` | `per_user` | `per_user` or `global` |
-| `--train-frac`, `--val-frac` | 0.8, 0.1 | Split proportions |
-| `--pos-threshold` | 4 | Ratings at or above this are positive |
-| `--min-user`, `--min-item` | 0, 0 | Minimum ratings per user / item for the main run |
-| `--seed` | 42 | Random seed (used for bootstrap resampling) |
-| `--n-boot` | 1000 | Bootstrap resamples |
-| `--quick` | off | Tiny grids, for smoke tests only |
+**Track A: Diversity and popularity bias**, with EASE as the base recommender.
 
-## Reproducibility
+- [ ] MMR re-ranking with genre vectors as item representation
+- [ ] Sweep of the trade-off parameter to draw the accuracy-diversity frontier
+- [ ] Evaluation of intra-list diversity, coverage, Gini index and calibration error
 
-- One command regenerates every reported number and figure; the data path is configurable.
-- Dependencies are pinned in `requirements.txt`.
-- Both baselines are deterministic. The only randomness is the bootstrap, seeded with 42.
-- No intermediate files are required: everything is recreated from the raw data.
-- Sanity check without the real data: `python tests/make_fake_ml1m.py fake_ml1m && python run_all.py --data-dir fake_ml1m --out-dir out_fake`.
+---
 
-## Known limitations
+## Use of AI Assistants
 
-- The per-user split respects each user's own time order but not a global one, which may make results somewhat optimistic.
-- Because most users rate in a single session, test performance mostly reflects within-session behaviour rather than long-term preference drift.
-- Part 1 uses a single data split; intervals reflect user sampling only. Paired tests and repeated runs are planned for Part 2.
-- The explanation for recent-window popularity underperforming all-time popularity is a hypothesis and has not been tested.
+Claude (Anthropic) was used to write and debug code, write tests, analyse result files and draft the report. The author ran all code, checked the results and text, and is responsible for everything submitted.
 
-## Data and acknowledgements
+---
 
-MovieLens 1M is provided by GroupLens Research and is not redistributed here; download it from the link above and follow its usage terms. Harper, F. M. and Konstan, J. A. (2015), *The MovieLens Datasets: History and Context*, ACM TiiS 5(4).
+## References
 
-## AI assistance
+- F. M. Harper and J. A. Konstan. *The MovieLens Datasets: History and Context.* ACM TiiS, 5(4), 2015.
+- B. Sarwar, G. Karypis, J. Konstan and J. Riedl. *Item-based collaborative filtering recommendation algorithms.* WWW, 2001.
+- S. Rendle, C. Freudenthaler, Z. Gantner and L. Schmidt-Thieme. *BPR: Bayesian personalized ranking from implicit feedback.* UAI, 2009.
+- Y. Hu, Y. Koren and C. Volinsky. *Collaborative filtering for implicit feedback datasets.* ICDM, 2008.
+- H. Steck. *Embarrassingly shallow autoencoders for sparse data.* WWW, 2019.
 
-AI tools were used in this project. Claude (Anthropic) assisted with writing the code and drafting text; see the AI-use section of the project report for details. <!-- Edit to match your report. -->
+---
+
+## Author
+
+**Siva Sandeep Atmakuru** · Group 26
+Repository: <https://github.com/Siva-Sandeep7/Recommender_System-Group_26>
